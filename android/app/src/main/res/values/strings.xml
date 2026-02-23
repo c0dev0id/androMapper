@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AndroMapper</string>
+    <string name="layer_manager">Layer Manager</string>
+    <string name="offline_download">Offline Download</string>
+    <string name="settings">Settings</string>
+    <string name="offline_mode">Offline</string>
+    <string name="no_base_map">No base map found. Place base.map in the maps/ folder.</string>
+    <string name="layer_enabled">Enabled</string>
+    <string name="offline_available">Offline</string>
+    <string name="download">Download</string>
+    <string name="layer_id_hint">Layer ID</string>
+    <string name="min_zoom_hint">Min Zoom (e.g. 8)</string>
+    <string name="max_zoom_hint">Max Zoom (e.g. 14)</string>
+    <string name="bbox_hint">Bounding box: minX,minY,maxX,maxY</string>
+    <string name="server_url_title">Server URL</string>
+    <string name="server_url_summary">Base URL of the geospatial server (https://…)</string>
+    <string name="pref_category_server">Server</string>
+</resources>
