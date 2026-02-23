@@ -24,8 +24,9 @@ class MapforgeTileSource(
         setTileSize(256)
         setZoomLevelMin(0.toByte())
         setZoomLevelMax(20.toByte())
-        setAlpha(true)
     }
+
+    override fun hasAlpha(): Boolean = true
 
     companion object {
         private fun extractHosts(url: String): Array<String> {
