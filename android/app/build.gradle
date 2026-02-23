@@ -21,14 +21,14 @@ android {
         release {
             def keystorePath     = System.getenv("SIGNING_KEYSTORE_PATH")
             def keystorePassword = System.getenv("SIGNING_KEYSTORE_PASSWORD")
-            def keyAlias         = System.getenv("SIGNING_KEY_ALIAS")
-            def keyPassword      = System.getenv("SIGNING_KEY_PASSWORD")
+            def signingKeyAlias  = System.getenv("SIGNING_KEY_ALIAS")
+            def signingKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
 
-            if (keystorePath && keystorePassword && keyAlias && keyPassword) {
+            if (keystorePath && keystorePassword && signingKeyAlias && signingKeyPassword) {
                 storeFile file(keystorePath)
                 storePassword keystorePassword
-                keyAlias keyAlias
-                keyPassword keyPassword
+                keyAlias signingKeyAlias
+                keyPassword signingKeyPassword
             }
         }
     }
@@ -37,9 +37,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (signingConfigs.release.storeFile != null) {
-                signingConfig signingConfigs.release
-            }
+        }
+        debug {
+            // Debug builds use default debug signing config
         }
     }
 

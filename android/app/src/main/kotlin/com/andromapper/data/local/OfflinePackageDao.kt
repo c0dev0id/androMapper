@@ -2,7 +2,6 @@ package com.andromapper.data.local
 
 import androidx.room.*
 import com.andromapper.data.local.entity.OfflinePackageEntity
-import com.andromapper.data.local.entity.OfflinePackageStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
