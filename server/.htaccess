@@ -1,0 +1,36 @@
+# Apache .htaccess for the Geospatial Normalization Server
+# Place this file in the server/ directory (DocumentRoot should point here or to server/api/).
+
+Options -Indexes
+DirectoryIndex api/index.php
+
+# Route all requests through the API router
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Serve existing static files / directories directly (e.g., cached tiles)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Route everything else to the API
+    RewriteRule ^(.*)$ api/index.php [QSA,L]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "no-referrer"
+</IfModule>
+
+# Restrict access to config and workers
+<FilesMatch "^(database\.php|queue_worker\.php|process_layer\.php)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Restrict direct access to storage
+<IfModule mod_rewrite.c>
+    RewriteRule ^storage/uploads/ - [F,L]
+</IfModule>
