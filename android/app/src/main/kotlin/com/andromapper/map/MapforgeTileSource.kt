@@ -19,6 +19,10 @@ class MapforgeTileSource(
     private val serverBaseUrl: String
 ) : AbstractTileSource(extractHosts(serverBaseUrl), extractPort(serverBaseUrl)) {
 
+    override fun getZoomLevelMin(): Byte = 0
+
+    override fun getZoomLevelMax(): Byte = 20
+
     override fun getTileUrl(tile: Tile): URL {
         val base = serverBaseUrl.trimEnd('/')
         return URL("$base/tiles/$layerId/${tile.zoomLevel}/${tile.tileX}/${tile.tileY}.png")

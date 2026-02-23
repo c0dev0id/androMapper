@@ -16,4 +16,5 @@
     <string name="server_url_title">Server URL</string>
     <string name="server_url_summary">Base URL of the geospatial server (https://…)</string>
     <string name="error_invalid_layer_bbox">Please enter a valid layer ID and bounding box.</string>
+    <string name="pref_category_server">Server</string>
 </resources>
