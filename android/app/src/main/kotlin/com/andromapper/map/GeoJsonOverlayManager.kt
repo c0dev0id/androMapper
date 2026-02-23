@@ -190,7 +190,7 @@ class GeoJsonOverlayManager(
         val paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
             color = lineColor
         }
-        canvas.drawCircle(size / 2, size / 2, (size / 2 - 1).toFloat(), paint)
+        canvas.drawCircle(size / 2, size / 2, size / 2 - 1, paint)
         return Marker(ll, bitmap, 0, 0)
     }
 

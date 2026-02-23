@@ -1,39 +1,31 @@
 package com.andromapper.map
 
-import org.mapsforge.core.model.Tile
-import org.mapsforge.map.layer.download.tilesource.AbstractTileSource
+import org.mapsforge.map.layer.download.tilesource.OnlineTileSource
 import java.net.MalformedURLException
 import java.net.URL
 
 /**
- * Mapsforge [AbstractTileSource] that serves tiles from the geospatial normalization server.
+ * Mapsforge tile source that serves tiles from the geospatial normalization server.
  *
  * Used with Mapsforge's [org.mapsforge.map.layer.download.TileDownloadLayer].
  * Tile URL pattern: {baseUrl}/tiles/{layerId}/{z}/{x}/{y}.png
- *
- * Mapsforge's built-in [org.mapsforge.map.layer.cache.FileSystemTileCache] provides
- * on-disk caching; no additional caching is needed at this layer.
  */
 class MapforgeTileSource(
     private val layerId: Int,
     private val serverBaseUrl: String
-) : AbstractTileSource(extractHosts(serverBaseUrl), extractPort(serverBaseUrl)) {
+) : OnlineTileSource(extractHosts(serverBaseUrl), extractPort(serverBaseUrl)) {
 
-    override fun getZoomLevelMin(): Byte = 0
-
-    override fun getZoomLevelMax(): Byte = 20
-
-    override fun getParallelRequestsLimit(): Int = 8
-
-    override fun getTileUrl(tile: Tile): URL {
-        val base = serverBaseUrl.trimEnd('/')
-        return URL("$base/tiles/$layerId/${tile.zoomLevel}/${tile.tileX}/${tile.tileY}.png")
+    init {
+        setName("Layer$layerId")
+        setBaseUrl("/tiles/$layerId/")
+        setExtension(".png")
+        setParallelRequestsLimit(8)
+        setProtocol(if (serverBaseUrl.startsWith("https")) "https" else "http")
+        setTileSize(256)
+        setZoomLevelMin(0.toByte())
+        setZoomLevelMax(20.toByte())
+        setAlpha(true)
     }
-
-    override fun hasAlpha(): Boolean = true
-
-    /** Override to ensure HTTPS is used. */
-    override fun getProtocol(): String = if (serverBaseUrl.startsWith("https")) "https" else "http"
 
     companion object {
         private fun extractHosts(url: String): Array<String> {
