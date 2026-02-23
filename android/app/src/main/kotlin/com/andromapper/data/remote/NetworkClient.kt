@@ -51,5 +51,5 @@ object NetworkClient {
     val apiService: ApiService by lazy { retrofit.create(ApiService::class.java) }
 
     /** Raw OkHttp client for tile downloads outside Retrofit. */
-    fun getOkHttpClient(): OkHttpClient = okHttpClient
+    fun httpClient(): OkHttpClient = okHttpClient
 }
