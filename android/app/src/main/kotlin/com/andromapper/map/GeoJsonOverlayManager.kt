@@ -197,7 +197,7 @@ class GeoJsonOverlayManager(
     private fun createPolyline(points: List<LatLong>): Polyline {
         val paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
             color = lineColor
-            strokeWidth = lineWidth
+            setStrokeWidth(lineWidth)
         }
         val polyline = Polyline(paint, AndroidGraphicFactory.INSTANCE)
         polyline.latLongs.addAll(points)
@@ -210,7 +210,7 @@ class GeoJsonOverlayManager(
         }
         val strokePaint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
             color = lineColor
-            strokeWidth = lineWidth
+            setStrokeWidth(lineWidth)
         }
         val polygon = Polygon(fillPaint, strokePaint, AndroidGraphicFactory.INSTANCE)
         polygon.latLongs.addAll(points)

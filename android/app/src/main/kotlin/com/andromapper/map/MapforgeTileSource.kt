@@ -23,14 +23,12 @@ class MapforgeTileSource(
 
     override fun getZoomLevelMax(): Byte = 20
 
+    override fun getParallelRequestsLimit(): Int = 8
+
     override fun getTileUrl(tile: Tile): URL {
         val base = serverBaseUrl.trimEnd('/')
         return URL("$base/tiles/$layerId/${tile.zoomLevel}/${tile.tileX}/${tile.tileY}.png")
     }
-
-    override fun getDefaultTimeToLive(): Int = 86_400   // 24 hours
-
-    override fun getMaximumCachedTiles(): Int = 2_000
 
     override fun hasAlpha(): Boolean = true
 
