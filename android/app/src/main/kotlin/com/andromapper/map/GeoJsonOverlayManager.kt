@@ -92,6 +92,7 @@ class GeoJsonOverlayManager(
                 if (coords?.isJsonArray == true) {
                     val ll = coordsToLatLong(coords.asJsonArray) ?: return
                     if (bbox != null && !inBbox(ll, bbox)) return
+                    if (out.size >= maxFeatures) return
                     out.add(createMarker(ll))
                 }
             }
@@ -100,18 +101,19 @@ class GeoJsonOverlayManager(
                     val points = ringToLatLongs(coords.asJsonArray)
                     if (points.size < 2) return
                     if (bbox != null && !anyInBbox(points, bbox)) return
+                    if (out.size >= maxFeatures) return
                     out.add(createPolyline(points))
                 }
             }
             "MultiLineString" -> {
                 if (coords?.isJsonArray == true) {
                     for (ring in coords.asJsonArray) {
+                        if (out.size >= maxFeatures) return
                         if (ring.isJsonArray) {
                             val points = ringToLatLongs(ring.asJsonArray)
                             if (points.size < 2) continue
                             if (bbox != null && !anyInBbox(points, bbox)) continue
                             out.add(createPolyline(points))
-                            if (out.size >= maxFeatures) return
                         }
                     }
                 }
@@ -122,19 +124,20 @@ class GeoJsonOverlayManager(
                     val points = ringToLatLongs(outer)
                     if (points.size < 3) return
                     if (bbox != null && !anyInBbox(points, bbox)) return
+                    if (out.size >= maxFeatures) return
                     out.add(createPolygon(points))
                 }
             }
             "MultiPolygon" -> {
                 if (coords?.isJsonArray == true) {
                     for (polygon in coords.asJsonArray) {
+                        if (out.size >= maxFeatures) return
                         if (polygon.isJsonArray) {
                             val outer = polygon.asJsonArray.firstOrNull()?.asJsonArray ?: continue
                             val points = ringToLatLongs(outer)
                             if (points.size < 3) continue
                             if (bbox != null && !anyInBbox(points, bbox)) continue
                             out.add(createPolygon(points))
-                            if (out.size >= maxFeatures) return
                         }
                     }
                 }
@@ -179,10 +182,16 @@ class GeoJsonOverlayManager(
     // ---- Mapsforge overlay creators ----
 
     private fun createMarker(ll: LatLong): Marker {
+        // Create a small colored circle bitmap to use as the marker icon
+        val size = 16
+        val bitmap = AndroidGraphicFactory.INSTANCE.createBitmap(size, size, true)
+        val canvas = AndroidGraphicFactory.INSTANCE.createCanvas()
+        canvas.setBitmap(bitmap)
         val paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
             color = lineColor
         }
-        return Marker(ll, AndroidGraphicFactory.convertToDrawable(null), 0, 0)
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 1f, paint)
+        return Marker(ll, bitmap, 0, 0)
     }
 
     private fun createPolyline(points: List<LatLong>): Polyline {

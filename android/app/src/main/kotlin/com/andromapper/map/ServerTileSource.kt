@@ -22,6 +22,10 @@ class ServerTileSource(
     private val httpClient: OkHttpClient
 ) {
 
+    companion object {
+        private const val MAX_ZOOM_LEVEL = 22
+    }
+
     private val cacheDir: File by lazy {
         File(context.getExternalFilesDir(null), "tiles/$layerId").apply { mkdirs() }
     }
@@ -48,7 +52,7 @@ class ServerTileSource(
 
     private fun fetchFromNetwork(zoom: Int, x: Int, y: Int, cacheFile: File): ByteArray? {
         // Sanitize inputs to prevent path traversal
-        if (zoom < 0 || zoom > 22 || x < 0 || y < 0) return null
+        if (zoom < 0 || zoom > MAX_ZOOM_LEVEL || x < 0 || y < 0) return null
         val maxTile = (1 shl zoom) - 1
         if (x > maxTile || y > maxTile) return null
 

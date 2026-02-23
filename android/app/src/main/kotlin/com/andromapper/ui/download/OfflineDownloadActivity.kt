@@ -26,7 +26,7 @@ class OfflineDownloadActivity : AppCompatActivity() {
 
             val layerId = layerIdText.toIntOrNull()
             if (layerId == null || bbox.isBlank()) {
-                binding.tvStatus.text = "Please enter a valid layer ID and bounding box."
+                binding.tvStatus.text = getString(R.string.error_invalid_layer_bbox)
                 return@setOnClickListener
             }
 

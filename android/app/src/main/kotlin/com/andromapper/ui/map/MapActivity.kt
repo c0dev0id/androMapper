@@ -12,8 +12,8 @@ import com.andromapper.data.local.entity.LayerType
 import com.andromapper.data.remote.NetworkClient
 import com.andromapper.databinding.ActivityMapBinding
 import com.andromapper.map.GeoJsonOverlayManager
+import com.andromapper.map.MapforgeTileSource
 import com.andromapper.map.MbTilesTileSource
-import com.andromapper.map.ServerTileSource
 import com.andromapper.ui.download.OfflineDownloadActivity
 import com.andromapper.ui.layers.LayerManagerActivity
 import com.andromapper.ui.settings.SettingsActivity
@@ -22,9 +22,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.mapsforge.core.model.LatLong
-import org.mapsforge.core.model.MapPosition
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
 import org.mapsforge.map.android.util.AndroidUtil
+import org.mapsforge.map.layer.download.TileDownloadLayer
 import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
 import org.mapsforge.map.rendertheme.InternalRenderTheme
@@ -38,6 +38,7 @@ class MapActivity : AppCompatActivity() {
 
     private val geoJsonManager = GeoJsonOverlayManager()
     private val openMbTilesSources = mutableListOf<MbTilesTileSource>()
+    private val downloadLayers = mutableListOf<TileDownloadLayer>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,8 +62,8 @@ class MapActivity : AppCompatActivity() {
         mapView.mapScaleBar.isVisible = true
         mapView.setBuiltInZoomControls(true)
         mapView.mapZoomControls.isShowMapZoomControls = true
-        mapView.model.mapViewPosition.mapPosition =
-            MapPosition(LatLong(37.7749, -122.4194), 10.toByte()) // Default: San Francisco
+        mapView.model.mapViewPosition.setCenter(LatLong(37.7749, -122.4194))
+        mapView.model.mapViewPosition.setZoomLevel(10.toByte())
 
         // Base map (offline .map file)
         val mapFile = File(getExternalFilesDir(null), "maps/base.map")
@@ -87,18 +88,27 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    private val activeLayerIds = mutableSetOf<Int>()
+
     private fun observeViewModel() {
         viewModel.isOnline.observe(this) { online ->
             binding.tvOfflineIndicator.visibility = if (online) View.GONE else View.VISIBLE
         }
 
         viewModel.layers.observe(this) { layers ->
-            // For raster layers, add server tile overlays
-            // For vector layers, load GeoJSON overlays
+            // Clear existing dynamic overlays (download layers) before re-adding
+            downloadLayers.forEach { it.onPause() }
+            val layersToRemove = downloadLayers.toList()
+            layersToRemove.forEach { binding.mapView.layerManager.layers.remove(it) }
+            downloadLayers.clear()
+            activeLayerIds.clear()
+
             layers.filter { it.isEnabled }.forEach { layer ->
-                when (layer.type) {
-                    LayerType.RASTER -> addRasterOverlay(layer.id)
-                    LayerType.VECTOR -> loadVectorOverlay(layer.id)
+                if (activeLayerIds.add(layer.id)) {
+                    when (layer.type) {
+                        LayerType.RASTER -> addRasterOverlay(layer.id)
+                        LayerType.VECTOR -> loadVectorOverlay(layer.id)
+                    }
                 }
             }
         }
@@ -118,17 +128,26 @@ class MapActivity : AppCompatActivity() {
         val baseUrl = prefs.getString("server_url", "") ?: return
         if (baseUrl.isBlank()) return
 
-        val serverSource = ServerTileSource(
-            layerId = layerId,
-            serverBaseUrl = baseUrl,
-            context = this,
-            httpClient = NetworkClient.getOkHttpClient()
+        val mapView = binding.mapView
+        val tileSource = MapforgeTileSource(layerId, baseUrl)
+
+        val tileCache = AndroidUtil.createTileCache(
+            this,
+            "layer_${layerId}_tiles",
+            mapView.model.displayModel.tileSize,
+            1f,
+            mapView.model.frameBufferModel.overdrawFactor
         )
 
-        // The actual tile layer rendering is wired via the map view's tile request mechanism.
-        // For a production app, integrate ServerTileSource into a custom TileLayer.
-        // Here we log readiness for the overlay.
-        android.util.Log.d("MapActivity", "Raster overlay ready for layer $layerId")
+        val downloadLayer = TileDownloadLayer(
+            tileCache,
+            mapView.model.mapViewPosition,
+            tileSource,
+            AndroidGraphicFactory.INSTANCE
+        )
+        mapView.layerManager.layers.add(downloadLayer)
+        downloadLayers.add(downloadLayer)
+        downloadLayer.onResume()
     }
 
     private fun loadVectorOverlay(layerId: Int) {
@@ -169,8 +188,19 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        downloadLayers.forEach { it.onResume() }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        downloadLayers.forEach { it.onPause() }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        downloadLayers.forEach { it.onPause() }
         openMbTilesSources.forEach { it.close() }
         binding.mapView.destroyAll()
         AndroidGraphicFactory.clearResourceMemoryCache()

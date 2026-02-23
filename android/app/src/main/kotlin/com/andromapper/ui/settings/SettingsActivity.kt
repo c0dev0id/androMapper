@@ -39,10 +39,15 @@ class SettingsActivity : AppCompatActivity() {
             findPreference<EditTextPreference>("server_url")
                 ?.setOnPreferenceChangeListener { _, newValue ->
                     val url = newValue.toString().trim()
-                    if (url.startsWith("https://")) {
-                        NetworkClient.configure(url)
-                        true
-                    } else {
+                    try {
+                        val parsed = java.net.URL(url)
+                        if (parsed.protocol == "https" || parsed.protocol == "http") {
+                            NetworkClient.configure(url)
+                            true
+                        } else {
+                            false
+                        }
+                    } catch (e: java.net.MalformedURLException) {
                         false
                     }
                 }

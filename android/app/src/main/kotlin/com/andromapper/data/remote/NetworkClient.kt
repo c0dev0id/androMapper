@@ -24,15 +24,16 @@ object NetworkClient {
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BASIC
             })
-            // Retry once on failure
+            // Retry once on failure: at most 2 total attempts
             .addInterceptor { chain ->
                 val request = chain.request()
-                var response = runCatching { chain.proceed(request) }.getOrNull()
-                if (response == null || !response.isSuccessful) {
-                    response?.close()
-                    response = runCatching { chain.proceed(request) }.getOrNull()
+                val firstResponse = runCatching { chain.proceed(request) }.getOrNull()
+                if (firstResponse != null && firstResponse.isSuccessful) {
+                    firstResponse
+                } else {
+                    firstResponse?.close()
+                    chain.proceed(request)  // second (final) attempt
                 }
-                response ?: chain.proceed(request)
             }
             .build()
     }

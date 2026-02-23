@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 private const val MAX_POLL_ATTEMPTS = 120 // 10 minutes at 5-second intervals
+private const val SERVER_STATUS_READY = "ready"
 
 class OfflinePackageRepository(
     private val db: AppDatabase,
@@ -62,7 +63,7 @@ class OfflinePackageRepository(
         // Poll every 5 seconds, up to 10 minutes
         repeat(MAX_POLL_ATTEMPTS) {
             val status = NetworkClient.apiService.getOfflinePackageStatus(packageId)
-            if (status.status == "ready") {
+            if (status.status == SERVER_STATUS_READY) {
                 return downloadMbTiles(packageId, layerId)
             }
             delay(5_000)
