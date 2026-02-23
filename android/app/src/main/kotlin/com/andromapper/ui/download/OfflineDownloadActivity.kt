@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.andromapper.R
 import com.andromapper.databinding.ActivityOfflineDownloadBinding
 
 class OfflineDownloadActivity : AppCompatActivity() {

@@ -17,14 +17,6 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
-        }
-    }
-
     signingConfigs {
         release {
             def keystorePath     = System.getenv("SIGNING_KEYSTORE_PATH")
@@ -37,12 +29,16 @@ android {
                 storePassword keystorePassword
                 keyAlias keyAlias
                 keyPassword keyPassword
-            } else if (keystorePath || keystorePassword || keyAlias || keyPassword) {
-                throw new GradleException(
-                    "Incomplete signing configuration: all of SIGNING_KEYSTORE_PATH, " +
-                    "SIGNING_KEYSTORE_PASSWORD, SIGNING_KEY_ALIAS, and SIGNING_KEY_PASSWORD " +
-                    "must be set together."
-                )
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
             }
         }
     }
