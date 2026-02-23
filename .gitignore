@@ -1,0 +1,17 @@
+# Android build artifacts
+android/.gradle/
+android/app/build/
+android/build/
+
+# Local config files
+android/local.properties
+
+# Signing keystore (never commit)
+*.keystore
+*.jks
+
+# Server storage (runtime data)
+server/storage/uploads/*
+server/storage/layers/*
+!server/storage/uploads/.gitkeep
+!server/storage/layers/.gitkeep
