@@ -1,0 +1,3 @@
+-keep class org.mapsforge.** { *; }
+-keep class com.andromapper.data.remote.model.** { *; }
+-dontwarn org.slf4j.**
